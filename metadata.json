@@ -1,0 +1,6 @@
+{
+  "name": "Klaus Browser",
+  "description": "Klaus Browser is a pure multi-tab web browser styled in a neon cyberpunk theme, featuring persistent browsing history, address bar autocomplete drops, customizable tabs, and proxy routing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
