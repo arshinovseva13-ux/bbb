@@ -138,21 +138,21 @@ async function exportProject(format){
    exporting=false;refreshExportButtons();
  }
  function finishError(){cleanup();$('status').textContent='Ошибка записи. Попробуйте другой формат или браузер.'}
- rec.start(250);let startTime=performance.now();
+ rec.start(1000);let startTime=performance.now(),lastMainIndex=-1;const activeOverlayKeys=new Set(),activeAudioKeys=new Set();
  function exportFrame(now){
    if(!exporting)return;
-   position=Math.min(total(),(now-startTime)/1000*Number($('fxSpeed')?.value||1));overlays.forEach(o=>{let m=media.find(x=>x.id===o.id);if(m&&m.overlayEl&&position>=o.start&&position<o.start+o.duration){try{m.overlayEl.currentTime=position-o.start}catch(e){}if(m.overlayEl.paused)m.overlayEl.play().catch(()=>{})}});audioOverlays.forEach(o=>{let m=media.find(x=>x.id===o.id);if(m&&m.audioEl&&position>=o.start&&position<o.start+o.duration){try{m.audioEl.currentTime=position-o.start}catch(e){}if(m.audioEl.paused)m.audioEl.play().catch(()=>{})}else if(m&&m.audioEl)m.audioEl.pause()});
+   position=Math.min(total(),(now-startTime)/1000*Number($('fxSpeed')?.value||1));const nextOverlayKeys=new Set(),nextAudioKeys=new Set();overlays.forEach((o,i)=>{let m=media.find(x=>x.id===o.id),key=i+':'+o.id;if(m&&m.overlayEl&&position>=o.start&&position<o.start+o.duration){nextOverlayKeys.add(key);if(!activeOverlayKeys.has(key)){try{m.overlayEl.currentTime=Math.max(0,position-o.start)}catch(e){}}if(m.overlayEl.paused)m.overlayEl.play().catch(()=>{})}else if(m&&m.overlayEl)m.overlayEl.pause()});audioOverlays.forEach((o,i)=>{let m=media.find(x=>x.id===o.id),key=i+':'+o.id;if(m&&m.audioEl&&position>=o.start&&position<o.start+o.duration){nextAudioKeys.add(key);if(!activeAudioKeys.has(key)){try{m.audioEl.currentTime=Math.max(0,position-o.start)}catch(e){}}if(m.audioEl.paused)m.audioEl.play().catch(()=>{})}else if(m&&m.audioEl)m.audioEl.pause()});activeOverlayKeys.clear();nextOverlayKeys.forEach(k=>activeOverlayKeys.add(k));activeAudioKeys.clear();nextAudioKeys.forEach(k=>activeAudioKeys.add(k));
    let inf=infoAt(position);
    if(inf){
      let m=media.find(x=>x.id===inf.clip.id);
      if(m&&m.type==='video'){
        if(video.dataset.mid!==m.id)loadVideo();
-       try{if(Math.abs(video.currentTime-inf.local)>.25)video.currentTime=inf.local}catch(e){}
+       if(lastMainIndex!==inf.index){try{video.currentTime=Math.max(0,inf.local)}catch(e){}lastMainIndex=inf.index}
        if(video.paused)video.play().catch(()=>{});
        audio.pause();
      }else if(m&&m.type==='audio'){
        video.pause();if(audio.dataset.mid!==m.id)loadVideo();
-       try{if(Math.abs(audio.currentTime-inf.local)>.25)audio.currentTime=inf.local}catch(e){}
+       if(lastMainIndex!==inf.index){try{audio.currentTime=Math.max(0,inf.local)}catch(e){}lastMainIndex=inf.index}
        if(audio.paused)audio.play().catch(()=>{});
      }else{video.pause();audio.pause()}
    }
