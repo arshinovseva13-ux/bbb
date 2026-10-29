@@ -12,7 +12,7 @@
 </style>
 </head>
 <body>
-<header><div class="brand">✦ Close <span>Video Studio</span></div><div class="muted statusTop">Локальный монтаж · без библиотек</div><div><button id="reset">Новый проект</button> <button class="primary" id="export">Экспорт WebM</button></div></header>
+<header><div class="brand">✦ Close <span>Video Studio</span></div><div class="muted statusTop">Локальный монтаж · без библиотек</div><div><button id="reset">Новый проект</button> <button class="primary" id="exportWebm">Экспорт WebM</button> <button id="exportMp4">Экспорт MP4</button></div></header>
 <main>
 <aside><div class="kicker">МЕДИАФАЙЛЫ</div><div class="drop"><strong>Добавить медиа</strong><p>Видео, изображения, аудио</p><input id="files" type="file" accept="video/*,image/*,audio/*" multiple style="width:100%;font-size:11px"></div><div id="mediaList"></div><p class="notice">Файлы остаются на устройстве и не отправляются на сервер.</p></aside>
 <section class="workspace">
@@ -21,7 +21,7 @@
 <div class="panel"><h3>Выбранный клип</h3><div class="field"><label>Длительность</label><input id="duration" type="number" min="1" max="300" value="5"><span>сек.</span></div><div class="field"><label>Кадр</label><select id="fit"><option value="cover">Заполнить</option><option value="contain">Вписать целиком</option></select></div><div class="field"><label>Фильтр</label><select id="filter"><option value="none">Без фильтра</option><option value="mono">Ч/Б</option><option value="warm">Тёплый</option><option value="cool">Холодный</option><option value="bright">Яркость</option></select></div><div id="status" class="status">Готов к работе.</div></div></div>
 <div class="timeline"><div class="timelineTop"><h3>Таймлайн</h3><span id="summary" class="muted">0 клипов · 0 сек.</span></div><div id="track" class="track"><span class="muted">Таймлайн пустой — добавьте медиа</span></div><div class="timelineBottom"><div><button id="add" class="primary">＋ На таймлайн</button><button id="remove">Удалить клип</button></div><div><label class="muted">Позиция</label><input id="seek" type="range" min="0" max="1000" value="0"><span id="seekLabel" class="time">0.0 с</span></div></div><p class="notice">Экспорт выполняется встроенным MediaRecorder браузера в WebM. Запись идёт в реальном времени: не закрывайте вкладку до завершения. Поддержка зависит от браузера.</p></div>
 </section></main>
-<video id="video" playsinline muted style="display:none"></video><audio id="audio" style="display:none"></audio>
+<video id="video" playsinline style="display:none"></video><audio id="audio" style="display:none"></audio>
 <script>
 (function(){
 const $=id=>document.getElementById(id), canvas=$('canvas'),ctx=canvas.getContext('2d'),video=$('video'),audio=$('audio');
@@ -57,7 +57,77 @@ $('duration').onchange=e=>{if(selected>=0){clips[selected].duration=Math.max(1,M
 $('fit').onchange=e=>{if(selected>=0){clips[selected].fit=e.target.value;draw()}};$('filter').onchange=e=>{if(selected>=0){clips[selected].filter=e.target.value;draw()}};
 ['overlay','fontSize','fontColor','fontPos'].forEach(id=>$(id).addEventListener('input',draw));
 $('reset').onclick=()=>{if(confirm('Очистить таймлайн?')){stop();clips=[];selected=-1;position=0;sync();renderTrack();draw()}};
-$('export').onclick=async()=>{if(!clips.length){$('status').textContent='Сначала добавьте клипы.';return}if(!canvas.captureStream||!window.MediaRecorder){$('status').textContent='Экспорт не поддерживается. Попробуйте Chrome или Edge.';return}if(exporting)return;exporting=true;stop();position=0;draw();$('export').disabled=true;$('status').textContent='Идёт экспорт — не закрывайте вкладку…';let stream=canvas.captureStream(30),mime='video/webm;codecs=vp9';if(!MediaRecorder.isTypeSupported(mime))mime='video/webm;codecs=vp8';if(!MediaRecorder.isTypeSupported(mime))mime='video/webm';let rec;try{rec=new MediaRecorder(stream,{mimeType:mime})}catch(e){rec=new MediaRecorder(stream)}let chunks=[];rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};rec.onerror=()=>finishError();rec.onstop=()=>{let blob=new Blob(chunks,{type:rec.mimeType||'video/webm'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='close-video-project.webm';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);stream.getTracks().forEach(t=>t.stop());exporting=false;$('export').disabled=false;$('status').textContent='Экспорт завершён: WebM.';position=0;draw()};function finishError(){stream.getTracks().forEach(t=>t.stop());exporting=false;$('export').disabled=false;$('status').textContent='Ошибка записи. Попробуйте другой браузер.'}rec.start(250);let start=performance.now();function exportFrame(now){if(!exporting)return;position=Math.min(total(),(now-start)/1000);let inf=infoAt(position);if(inf){let m=media.find(x=>x.id===inf.clip.id);if(m&&m.type==='video'){if(video.dataset.mid!==m.id)loadVideo();try{if(Math.abs(video.currentTime-inf.local)>.25)video.currentTime=inf.local}catch(e){}if(video.paused)video.play().catch(()=>{})}else{video.pause();audio.pause()}}draw();$('status').textContent='Экспорт: '+Math.round(position/total()*100)+'%';if(position>=total()){video.pause();setTimeout(()=>{if(rec.state!=='inactive')rec.stop()},350)}else requestAnimationFrame(exportFrame)}requestAnimationFrame(exportFrame)};
+let audioContext=null,videoNode=null,audioNode=null,audioCapture=null;
+function supportsMime(mime){try{return !!(window.MediaRecorder&&MediaRecorder.isTypeSupported(mime))}catch(e){return false}}
+function refreshExportButtons(){
+ $('exportWebm').disabled=!supportsMime('video/webm')&&!supportsMime('video/webm;codecs=vp8')&&!supportsMime('video/webm;codecs=vp9');
+ $('exportMp4').disabled=!supportsMime('video/mp4')&&!supportsMime('video/mp4;codecs=avc1.42E01E');
+ $('exportMp4').title=$('exportMp4').disabled?'Этот браузер не поддерживает встроенный MP4-экспорт. Попробуйте другой браузер.':'Экспорт в MP4';
+}
+async function exportProject(format){
+ if(!clips.length){$('status').textContent='Сначала добавьте клипы.';return}
+ if(!canvas.captureStream||!window.MediaRecorder){$('status').textContent='Экспорт не поддерживается. Попробуйте Chrome или Edge.';return}
+ if(exporting)return;
+ let mime=format==='mp4'?'video/mp4':'video/webm;codecs=vp9';
+ if(format==='mp4'&&!supportsMime(mime))mime='video/mp4;codecs=avc1.42E01E';
+ if(format==='mp4'&&!supportsMime(mime)){ $('status').textContent='В этом браузере нет встроенного MP4-кодека. Попробуйте Safari или используйте WebM.';return}
+ if(format==='webm'&&!supportsMime(mime)){mime='video/webm;codecs=vp8';if(!supportsMime(mime))mime='video/webm';}
+ exporting=true;stop();position=0;draw();$('exportWebm').disabled=true;$('exportMp4').disabled=true;$('status').textContent='Подготовка экспорта '+format.toUpperCase()+'…';
+ let videoStream=canvas.captureStream(30),stream=videoStream;
+ try{
+   const AC=window.AudioContext||window.webkitAudioContext;
+   if(AC){
+     if(!audioContext){audioContext=new AC();videoNode=audioContext.createMediaElementSource(video);audioNode=audioContext.createMediaElementSource(audio)}
+     await audioContext.resume();
+     audioCapture=audioContext.createMediaStreamDestination();
+     videoNode.connect(audioCapture);audioNode.connect(audioCapture);
+     // Audio is captured in the file; don't play it twice through the speakers during export.
+     stream=new MediaStream([...videoStream.getVideoTracks(),...audioCapture.stream.getAudioTracks()]);
+   }
+ }catch(e){stream=videoStream;$('status').textContent='Экспорт видео без аудиомикшера; звук может отсутствовать в этом браузере.'}
+ let rec;
+ try{rec=new MediaRecorder(stream,{mimeType:mime})}catch(e){try{rec=new MediaRecorder(stream)}catch(err){stream.getTracks().forEach(t=>t.stop());exporting=false;refreshExportButtons();$('status').textContent='Не удалось запустить экспорт в этом формате.';return}}
+ let chunks=[];
+ rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+ rec.onerror=()=>finishError();
+ rec.onstop=()=>{
+   let blob=new Blob(chunks,{type:rec.mimeType||mime}),url=URL.createObjectURL(blob),a=document.createElement('a');
+   a.href=url;a.download='close-video-project.'+(format==='mp4'?'mp4':'webm');document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+   cleanup();$('status').textContent='Экспорт завершён: '+format.toUpperCase()+'.';position=0;draw();
+ };
+ function cleanup(){
+   stream.getTracks().forEach(t=>t.stop());
+   if(audioCapture){try{videoNode.disconnect(audioCapture);audioNode.disconnect(audioCapture)}catch(e){}audioCapture=null}
+   exporting=false;refreshExportButtons();
+ }
+ function finishError(){cleanup();$('status').textContent='Ошибка записи. Попробуйте другой формат или браузер.'}
+ rec.start(250);let startTime=performance.now();
+ function exportFrame(now){
+   if(!exporting)return;
+   position=Math.min(total(),(now-startTime)/1000);
+   let inf=infoAt(position);
+   if(inf){
+     let m=media.find(x=>x.id===inf.clip.id);
+     if(m&&m.type==='video'){
+       if(video.dataset.mid!==m.id)loadVideo();
+       try{if(Math.abs(video.currentTime-inf.local)>.25)video.currentTime=inf.local}catch(e){}
+       if(video.paused)video.play().catch(()=>{});
+       audio.pause();
+     }else if(m&&m.type==='audio'){
+       video.pause();if(audio.dataset.mid!==m.id)loadVideo();
+       try{if(Math.abs(audio.currentTime-inf.local)>.25)audio.currentTime=inf.local}catch(e){}
+       if(audio.paused)audio.play().catch(()=>{});
+     }else{video.pause();audio.pause()}
+   }
+   draw();$('status').textContent='Экспорт '+format.toUpperCase()+': '+Math.round(position/total()*100)+'%';
+   if(position>=total()){video.pause();audio.pause();setTimeout(()=>{if(rec.state!=='inactive')rec.stop()},350)}
+   else requestAnimationFrame(exportFrame)
+ }
+ requestAnimationFrame(exportFrame)
+}
+$('exportWebm').onclick=()=>exportProject('webm');
+$('exportMp4').onclick=()=>exportProject('mp4');
+refreshExportButtons();
 window.addEventListener('beforeunload',()=>urls.forEach(URL.revokeObjectURL));sync();draw();
 })();
 </script>
