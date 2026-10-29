@@ -98,6 +98,7 @@ async function exportProject(format){
  function cleanup(){
    stream.getTracks().forEach(t=>t.stop());
    if(audioCapture){try{videoNode.disconnect(audioCapture);audioNode.disconnect(audioCapture)}catch(e){}audioCapture=null}
+   if(audioContext&&videoNode&&audioNode){try{videoNode.connect(audioContext.destination);audioNode.connect(audioContext.destination)}catch(e){}}
    exporting=false;refreshExportButtons();
  }
  function finishError(){cleanup();$('status').textContent='Ошибка записи. Попробуйте другой формат или браузер.'}
