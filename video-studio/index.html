@@ -26,10 +26,9 @@
 @media(max-width:780px){.fxGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .timeline.collapsed #trackLanes{display:none}#trackLanes{display:grid;gap:8px;margin-top:10px}.lane{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px}.laneLabel{padding:8px;background:#1b1e29;border:1px solid var(--line);border-radius:8px;font-size:11px;color:var(--muted)}.laneTrack{display:flex;gap:5px;overflow-x:auto;min-height:56px;padding:5px;border:1px solid #303447;border-radius:8px;background:repeating-linear-gradient(90deg,#11131a 0,#11131a 79px,#242736 80px)}.laneClip{position:relative;flex:0 0 auto;min-width:100px;max-width:220px;padding:7px;border-radius:7px;background:#35305b;border:1px solid #6860a7;cursor:pointer}.laneClip.audio{background:#174c4a;border-color:#3aa99d}.laneClip.overlay{background:#54364f;border-color:#a85d9b}.laneClip small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px}.laneClip button{position:absolute;right:1px;top:0;padding:0 4px}.timelineTools{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.timelineTools button{font-size:11px}#track{display:none}@media(max-width:520px){.lane{grid-template-columns:80px minmax(0,1fr)}}
-/* Themes and workspace background controls */
-:root{--app-background:#101116;--surface:#191b24;--surface-2:#222531}
-body{background:var(--app-background)}
-body[data-theme="light"]{color-scheme:light;--bg:#eef1f7;--panel:#ffffff;--panel2:#f0f2f8;--line:#d5d9e5;--text:#202333;--muted:#687087;--app-background:#e9edf5;--surface:#fff;--surface-2:#f0f2f8}
+/* Единый анимированный фон «Живые пузырьки» */
+:root{--bubble-blue:#60a5fa;--bubble-orange:#fb923c;--bubble-pink:#f472b6;--bubble-green:#4ade80;--bubble-yellow:#facc15}
+body[data-theme="light"]{color-scheme:light;--bg:#eef1f7;--panel:#fff;--panel2:#f0f2f8;--line:#d5d9e5;--text:#202333;--muted:#687087;--bubble-blue:#2563eb;--bubble-orange:#ea580c;--bubble-pink:#db2777;--bubble-green:#16a34a;--bubble-yellow:#ca8a04}
 body[data-theme="light"] header{background:#fff}
 body[data-theme="light"] aside,body[data-theme="light"] .panel,body[data-theme="light"] .timeline,body[data-theme="light"] .fxRack{background:var(--panel);border-color:var(--line)}
 body[data-theme="light"] .bar,body[data-theme="light"] .transport{background:#f5f6fa;border-color:var(--line)}
@@ -41,28 +40,22 @@ body[data-theme="light"] .laneLabel{background:#f3f4f9;border-color:var(--line)}
 body[data-theme="light"] .laneTrack{background:repeating-linear-gradient(90deg,#f7f8fb 0,#f7f8fb 79px,#e4e7f0 80px);border-color:var(--line)}
 body[data-theme="light"] .track{background:#f5f6fa;border-color:var(--line)}
 body[data-theme="light"] .drop{background:#f5f6fa;border-color:#b9bfd0}
-.settingsPanel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:14px}
-.settingsPanel h3{font-size:13px;margin:0 0 10px}
-.settingsRow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:9px 0}
-.settingsRow label{font-size:12px;color:var(--muted)}
-.settingsRow input[type=color]{width:42px;height:32px;padding:2px;border:1px solid var(--line);border-radius:7px;background:transparent}
-.settingsRow select{max-width:145px;min-width:0;padding:7px;border:1px solid var(--line);border-radius:7px;background:#11131a;color:var(--text)}
-body[data-theme="light"] .settingsRow select{background:#fff;color:#202333;border-color:#cbd0df}
-.themeButtons{display:flex;gap:6px}
-.themeButtons button{flex:1;padding:7px 5px;font-size:11px}
-.themeButtons button.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+#particles{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+body{min-height:100vh;background:linear-gradient(-45deg,var(--bubble-bg1),var(--bubble-bg2),var(--bubble-bg3),var(--bubble-bg1));background-size:400% 400%;animation:closeBubbleGradient 60s ease infinite}
+body[data-theme="dark"]{--bubble-bg1:#0f172a;--bubble-bg2:#1e293b;--bubble-bg3:#334155}
+body[data-theme="light"]{--bubble-bg1:#f8fafc;--bubble-bg2:#e2e8f0;--bubble-bg3:#cbd5e1}
+body>header,body>main{position:relative;z-index:1}
+@keyframes closeBubbleGradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.particle{position:absolute;bottom:-60px;border-radius:50%;opacity:0;filter:blur(.4px);pointer-events:none;animation:closeBubbleRise linear forwards}
+.particle:after{content:"";position:absolute;left:22%;top:15%;width:30%;height:22%;border-radius:50%;background:rgba(255,255,255,.75);filter:blur(2px)}
+@keyframes closeBubbleRise{0%{transform:translateY(0) scale(.7);opacity:0}8%{opacity:.5}85%{opacity:.4}100%{transform:translateY(-115vh) scale(1.1);opacity:0}}
 </style>
 </head>
 <body>
+<div id="particles" aria-hidden="true"></div>
 <header><div class="brand">✦ Close &amp; MD2 World <span>Видеоредактор</span></div><div class="muted statusTop">Локальный монтаж · без библиотек</div><div><button id="reset">Новый проект</button> <button class="primary" id="exportWebm">Экспорт WebM</button> <button id="exportMp4">Экспорт MP4</button></div></header>
 <main>
-<aside><div class="kicker">МЕДИАФАЙЛЫ</div><p class="muted">Импортируйте файлы кнопкой «Добавить медиа» на таймлайне. Затем клипы появятся здесь и на дорожках.</p><input id="files" type="file" accept="video/*,image/*,audio/*" multiple hidden><div id="mediaList"></div><p class="notice">Файлы остаются на устройстве и не отправляются на сервер.</p><section class="settingsPanel">
-<h3>⚙ Внешний вид</h3>
-<div class="settingsRow"><label for="bgPreset">Фон интерфейса</label><select id="bgPreset"><option value="default">Графитовый</option><option value="midnight">Полночь</option><option value="plum">Сливовый</option><option value="ocean">Океан</option><option value="custom">Свой цвет</option></select></div>
-<div class="settingsRow"><label for="bgColor">Свой цвет фона</label><input id="bgColor" type="color" value="#101116"></div>
-<div class="settingsRow"><label>Тема</label><div class="themeButtons"><button type="button" id="darkTheme" class="active">Тёмная</button><button type="button" id="lightTheme">Светлая</button></div></div>
-<p class="notice">Настройки оформления сохраняются на этом устройстве.</p>
-</section></aside>
+<aside><div class="kicker">МЕДИАФАЙЛЫ</div><p class="muted">Импортируйте файлы кнопкой «Добавить медиа» на таймлайне. Затем клипы появятся здесь и на дорожках.</p><input id="files" type="file" accept="video/*,image/*,audio/*" multiple hidden><div id="mediaList"></div><p class="notice">Файлы остаются на устройстве и не отправляются на сервер.</p></aside>
 <section class="workspace">
 <div class="preview"><div class="bar"><strong>Предпросмотр</strong><span class="muted">16:9 · 1280 × 720</span></div><div class="stage"><div class="canvasWrap"><canvas id="canvas" width="1280" height="720"></canvas></div></div><div class="transport"><button id="back">−5 с</button><button id="play" class="primary">▶ Просмотр</button><button id="forward">+5 с</button><span id="clock" class="time">00:00 / 00:00</span></div></div>
 <div class="panels"><div class="panel"><h3>Текст поверх видео</h3><div class="field"><label>Надпись</label><input id="overlay" type="text" placeholder="Введите заголовок"></div><div class="field"><label>Размер</label><input id="fontSize" type="range" min="24" max="100" value="54"></div><div class="field"><label>Цвет</label><input id="fontColor" type="color" value="#ffffff"></div><div class="field"><label>Положение</label><select id="fontPos"><option value="bottom">Снизу</option><option value="center">По центру</option><option value="top">Сверху</option></select></div></div>
@@ -83,7 +76,7 @@ body[data-theme="light"] .settingsRow select{background:#fff;color:#202333;borde
 <div class="fxTile"><label>Кинорамка</label><label class="fxToggle"><input id="fxLetterbox" type="checkbox"> Широкий формат</label><label class="fxToggle"><input id="fxVignette" type="checkbox"> Затемнить края</label></div>
 </div><div class="fxPresets"><button data-preset="cinematic">🎬 Cinematic</button><button data-preset="retro">📼 Retro VHS</button><button data-preset="cyber">💜 Cyberpunk</button><button data-preset="dream">☁ Dream</button><button data-preset="glitch">⚡ Glitch</button><button data-preset="clean">✨ Clean</button></div><p class="notice">Эффекты применяются в предпросмотре и в записи экспорта. Некоторые эффекты, например зерно и RGB-глитч, создают дополнительную нагрузку на устройство.</p></div>
 
-<div class="timeline"><div class="timelineTop"><h3>Многодорожечный таймлайн</h3><button id="collapseTracks">⌄ Свернуть дорожки</button><span id="summary" class="muted">0 клипов · 0 сек.</span></div><div id="track" class="track"></div><div id="trackLanes"><div class="lane"><div class="laneLabel">🎬 Основное видео</div><div class="laneTrack" id="mainLane"></div></div><div class="lane"><div class="laneLabel">▧ Наложения</div><div class="laneTrack" id="overlayLane"></div></div><div class="lane"><div class="laneLabel">♫ Аудио по времени</div><div class="laneTrack" id="audioLane"></div></div></div><div class="timelineTools"><button id="importMedia" class="primary">＋ Добавить медиа</button><button id="addOverlay">＋ Наложить видео / фото</button><button id="addAudio">＋ Аудио в текущую позицию</button><button id="collapseAll">↕ Коллапс / развернуть</button></div><div class="timelineBottom"><div><button id="add" class="primary">＋ На таймлайн</button><button id="remove">Удалить клип</button></div><div><label class="muted">Позиция</label><input id="seek" type="range" min="0" max="1000" value="0"><span id="seekLabel" class="time">0.0 с</span></div></div><p class="notice">Экспорт выполняется встроенным MediaRecorder браузера в WebM. Запись идёт в реальном времени: не закрывайте вкладку до завершения. Поддержка зависит от браузера.</p></div><div class="panel"><h3>История обновлений</h3><div class="notice"><strong>30.10.2026 — Настройка оформления</strong><br>Добавлены выбор фона интерфейса, собственный цвет и две темы — тёмная и светлая. Выбор оформления сохраняется на устройстве.<br><br><strong>29.10.2026 — Обновление импорта</strong><br>Кнопка «Добавить медиа» перенесена на таймлайн. Импорт автоматически добавляет выбранные файлы на подходящие дорожки; таймлайн раскрывается после добавления.<br><br><strong>29.10.2026 — Многодорожечный монтаж</strong><br>Добавлены отдельные дорожки основного видео, наложений и аудио, а также управление клипами и позиционированием.<br><br><strong>29.10.2026 — Спецэффекты и экспорт</strong><br>Добавлены пресеты обработки изображения, эффекты движения, настройки цвета и экспорт WebM/MP4 при поддержке браузера.</div></div>
+<div class="timeline"><div class="timelineTop"><h3>Многодорожечный таймлайн</h3><button id="collapseTracks">⌄ Свернуть дорожки</button><span id="summary" class="muted">0 клипов · 0 сек.</span></div><div id="track" class="track"></div><div id="trackLanes"><div class="lane"><div class="laneLabel">🎬 Основное видео</div><div class="laneTrack" id="mainLane"></div></div><div class="lane"><div class="laneLabel">▧ Наложения</div><div class="laneTrack" id="overlayLane"></div></div><div class="lane"><div class="laneLabel">♫ Аудио по времени</div><div class="laneTrack" id="audioLane"></div></div></div><div class="timelineTools"><button id="importMedia" class="primary">＋ Добавить медиа</button><button id="addOverlay">＋ Наложить видео / фото</button><button id="addAudio">＋ Аудио в текущую позицию</button><button id="collapseAll">↕ Коллапс / развернуть</button></div><div class="timelineBottom"><div><button id="add" class="primary">＋ На таймлайн</button><button id="remove">Удалить клип</button></div><div><label class="muted">Позиция</label><input id="seek" type="range" min="0" max="1000" value="0"><span id="seekLabel" class="time">0.0 с</span></div></div><p class="notice">Экспорт выполняется встроенным MediaRecorder браузера в WebM. Запись идёт в реальном времени: не закрывайте вкладку до завершения. Поддержка зависит от браузера.</p></div><div class="panel"><h3>История обновлений</h3><div class="notice"><strong>30.10.2026 — Анимированный фон «Живые пузырьки»</strong><br>Единый фон приложения: плавный градиент, светящиеся пузырьки и частицы. Встроены тёмная и светлая темы, между которыми фон переключается автоматически.<br><br><strong>29.10.2026 — Обновление импорта</strong><br>Кнопка «Добавить медиа» перенесена на таймлайн. Импорт автоматически добавляет выбранные файлы на подходящие дорожки; таймлайн раскрывается после добавления.<br><br><strong>29.10.2026 — Многодорожечный монтаж</strong><br>Добавлены отдельные дорожки основного видео, наложений и аудио, а также управление клипами и позиционированием.<br><br><strong>29.10.2026 — Спецэффекты и экспорт</strong><br>Добавлены пресеты обработки изображения, эффекты движения, настройки цвета и экспорт WebM/MP4 при поддержке браузера.</div></div>
 </section></main>
 <video id="video" playsinline style="display:none"></video><audio id="audio" style="display:none"></audio>
 <script>
@@ -203,32 +196,24 @@ const presets={cinematic:{fxLook:'cinema',fxMotion:'zoom',fxOverlay:'vignette',f
 document.querySelectorAll('[data-preset]').forEach(btn=>btn.onclick=()=>{let p=presets[btn.dataset.preset];if(!p)return;Object.entries(p).forEach(([id,val])=>{if($(id)){if($(id).type==='checkbox')$(id).checked=!!val;else $(id).value=val}});refreshFxLabels();draw();$('status').textContent='Пресет применён: '+btn.textContent.trim()});
 refreshFxLabels();
 
-const bgPresets={default:'#101116',midnight:'#080d1b',plum:'#1b1020',ocean:'#0b1b25'};
+let bubbleCount=0;
+const particleRoot=$('particles');
+const bubbleColors=['var(--bubble-blue)','var(--bubble-orange)','var(--bubble-pink)','var(--bubble-green)','var(--bubble-yellow)','rgba(255,255,255,.9)'];
+function createBubble(){
+ const el=document.createElement('i');el.className='particle';
+ const size=15+Math.random()*32;el.style.width=size+'px';el.style.height=size+'px';
+ el.style.left=Math.random()*100+'%';el.style.background=bubbleColors[Math.floor(Math.random()*bubbleColors.length)];
+ el.style.boxShadow='0 0 '+(8+size/2)+'px rgba(255,255,255,.28),inset -4px -5px 10px rgba(0,0,0,.12)';
+ el.style.animationDuration=(30+Math.random()*40)+'s';
+ el.style.animationDelay=(-Math.random()*60)+'s';
+ el.addEventListener('animationend',()=>{el.remove();if(bubbleCount<40){bubbleCount++;particleRoot.appendChild(createBubble())}});
+ return el;
+}
 function applyAppearance(){
  const theme=localStorage.getItem('closeMd2Theme')||'dark';
- document.body.dataset.theme=theme;
- $('darkTheme').classList.toggle('active',theme==='dark');
- $('lightTheme').classList.toggle('active',theme==='light');
- const preset=localStorage.getItem('closeMd2BgPreset')||'default';
- const color=localStorage.getItem('closeMd2BgColor')||bgPresets[preset]||bgPresets.default;
- $('bgPreset').value=preset;$('bgColor').value=color;
- document.documentElement.style.setProperty('--app-background',color);
+ document.body.dataset.theme=theme==='light'?'light':'dark';
 }
-$('darkTheme').onclick=()=>{localStorage.setItem('closeMd2Theme','dark');applyAppearance()};
-$('lightTheme').onclick=()=>{localStorage.setItem('closeMd2Theme','light');applyAppearance()};
-$('bgPreset').onchange=e=>{
- const preset=e.target.value;
- if(preset==='custom'){$('bgColor').click();return}
- localStorage.setItem('closeMd2BgPreset',preset);
- localStorage.setItem('closeMd2BgColor',bgPresets[preset]);
- applyAppearance();
-};
-$('bgColor').oninput=e=>{
- localStorage.setItem('closeMd2BgPreset','custom');
- localStorage.setItem('closeMd2BgColor',e.target.value);
- $('bgPreset').value='custom';
- document.documentElement.style.setProperty('--app-background',e.target.value);
-};
+for(let i=0;i<40;i++){particleRoot.appendChild(createBubble());bubbleCount++}
 applyAppearance();
 
 $('exportWebm').onclick=()=>exportProject('webm');
