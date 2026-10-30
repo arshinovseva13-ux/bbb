@@ -80,6 +80,33 @@ header,aside,.preview,.bar,.transport,.panel,.timeline,.fxRack,.drop,.media,.fxT
 body[data-theme="light"] header,body[data-theme="light"] aside,body[data-theme="light"] .preview,body[data-theme="light"] .bar,body[data-theme="light"] .transport,body[data-theme="light"] .panel,body[data-theme="light"] .timeline,body[data-theme="light"] .fxRack,body[data-theme="light"] .drop,body[data-theme="light"] .media,body[data-theme="light"] .fxTile,body[data-theme="light"] .track,body[data-theme="light"] .laneLabel,body[data-theme="light"] .laneTrack{background:rgba(248,250,255,.32)!important;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
 .theme-btn{position:fixed!important;top:20px!important;right:20px!important;width:50px!important;height:50px!important;padding:0!important;border-radius:50%!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(255,255,255,.1)!important;border:1px solid rgba(255,255,255,.2)!important;box-shadow:0 5px 15px rgba(0,0,0,.3)!important;z-index:1000!important;font-size:24px!important;transition:transform .4s!important}.theme-btn:hover{transform:rotate(180deg) scale(1.1)!important}
 @media(max-width:768px){.theme-btn{top:15px!important;right:15px!important;width:45px!important;height:45px!important;font-size:21px!important}}
+
+/* MD2 Sites-inspired: background must remain vivid through the entire glass UI */
+#particles{z-index:0!important;opacity:1!important}
+.particle{opacity:.88!important;filter:blur(0)!important}
+body{background:linear-gradient(-45deg,#07152f,#172c50,#273b62,#10172d)!important;background-size:400% 400%!important}
+body[data-theme="light"]{background:linear-gradient(-45deg,#dcecff,#c7ddf7,#f3dfff,#d5f5f0)!important;background-size:400% 400%!important}
+header,aside,.preview,.bar,.transport,.panel,.timeline,.fxRack,.drop,.media,.fxTile,.track,.laneLabel,.laneTrack,.timelineTools,.notice{
+ background:rgba(13,20,39,.10)!important;
+ background-color:rgba(13,20,39,.10)!important;
+ backdrop-filter:blur(3px)!important;
+ -webkit-backdrop-filter:blur(3px)!important;
+}
+main,.workspace,.panels{background:transparent!important}
+.preview{background:rgba(8,12,25,.08)!important}
+body[data-theme="light"] header,body[data-theme="light"] aside,body[data-theme="light"] .preview,
+body[data-theme="light"] .bar,body[data-theme="light"] .transport,body[data-theme="light"] .panel,
+body[data-theme="light"] .timeline,body[data-theme="light"] .fxRack,body[data-theme="light"] .drop,
+body[data-theme="light"] .media,body[data-theme="light"] .fxTile,body[data-theme="light"] .track,
+body[data-theme="light"] .laneLabel,body[data-theme="light"] .laneTrack,body[data-theme="light"] .timelineTools,
+body[data-theme="light"] .notice{
+ background:rgba(255,255,255,.12)!important;
+ background-color:rgba(255,255,255,.12)!important;
+ backdrop-filter:blur(3px)!important;
+ -webkit-backdrop-filter:blur(3px)!important;
+}
+.particle{box-shadow:0 0 26px currentColor,0 0 12px rgba(255,255,255,.5),inset -4px -5px 10px rgba(0,0,0,.08)!important}
+
 </style>
 </head>
 <body>
